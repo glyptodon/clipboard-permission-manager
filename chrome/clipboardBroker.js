@@ -37,19 +37,35 @@
  * @author Michael Jumper
  */
 
-// Forward request for clipboard data if clipboard access is granted
-document.addEventListener('_clip-perm-man-get-data', function getData(e) {
+(function() {
 
-    // STUB: Send fake clipboard contents via an event
-    document.dispatchEvent(new CustomEvent('_clip-perm-man-data', {
-        'detail' : new Date().toString()
-    }));
+    /**
+     * Notifies the overridden document.execCommand() implementation that the
+     * local clipboard contents have been successfully read as requested.
+     *
+     * @param {String} contents
+     *     The local clipboard contents.
+     */
+    var notifyClipboardRead = function notifyClipboardRead(contents) {
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-data', {
+            'detail' : contents 
+        }));
+    };
 
-});
+    // Forward request for clipboard data if clipboard access is granted
+    document.addEventListener('_clip-perm-man-get-data', function getData(e) {
+        chrome.runtime.sendMessage({
+            'type' : 'get-data'
+        }, notifyClipboardRead);
+    });
 
-// Forward request to set clipboard data if clipboard access is granted
-document.addEventListener('_clip-perm-man-set-data', function setData(e) {
-    // STUB
-    console.log('SET', e.detail);
-});
+    // Forward request to set clipboard data if clipboard access is granted
+    document.addEventListener('_clip-perm-man-set-data', function setData(e) {
+        chrome.runtime.sendMessage({
+            'type' : 'set-data',
+            'data' : e.detail
+        });
+    });
+
+})();
 

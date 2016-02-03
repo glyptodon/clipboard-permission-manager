@@ -20,5 +20,38 @@
  * THE SOFTWARE.
  */
 
-/* PLACEHOLDER */
+/**
+ * @file Responds to messages received from the clipboard broker, which MUST
+ * only send such messages if clipboard access is granted. Requests will take
+ * the form of messages having a "type" property which may be "get-data" for
+ * requests to read clipboard data and "set-data" for requests to set the
+ * current clipboard data. If the type is "get-data", the response callback
+ * given to chrome.runtime.sendMessage() will be invoked with the current
+ * clipboard data if and when it is successfully read. If the type is
+ * "set-data", an additional "data" property must be present which contains
+ * the string data to set.
+ *
+ * @author Michael Jumper
+ */
+
+// Wait for and handle any clipboard request messages from the content page
+chrome.runtime.onMessage.addListener(function handleMessage(message, sender,
+            sendResponse) {
+
+    // Handle message appropriately depending on message type
+    switch (message.type) {
+
+        // STUB: Pull clipboard data if requested
+        case 'get-data':
+            sendResponse('TEST: ' + new Date().toString());
+            break;
+
+        // STUB: Set clipboard data if requested
+        case 'set-data':
+            console.log('SET', message.data);
+            break;
+
+    }
+
+});
 
