@@ -20,7 +20,19 @@
  * THE SOFTWARE.
  */
 
-(function() {
+/**
+ * @file Overrides the default document.execCommand() implementation, providing
+ * versions of the "cut", "copy", and "paste" commands which directly access
+ * clipboard data if permission has been explicitly granted for the current
+ * page. If permission has not been granted, or a different command is given,
+ * the default document.execCommand() implementation is used.
+ *
+ * @author Michael Jumper
+ */
+
+// Override document.execCommand() such that clipboard data can be exposed
+// without corresponding user events if permission is explicitly granted.
+(function overrideExecCommand() {
 
     /**
      * The current contents of the local clipboard. This will be continuously
@@ -29,7 +41,7 @@
      *
      * @type {String}
      */
-    var clipboardContents = 'TEST';
+    var clipboardContents = null;
 
     /**
      * The previous definition of document.execCommand(). This function will be
@@ -46,8 +58,23 @@
      *     The value to assign to the local clipboard.
      */
     var setLocalClipboard = function setLocalClipboard(value) {
-        console.log('SET', value);
+        document.dispatchEvent(new CustomEvent('_allow-clipboard-set-data', {
+            'detail' : value
+        }));
     };
+
+    /**
+     * The ID of the periodic clipboard polling interval, as returned by
+     * window.setInterval(). The clipboard polling interval periodically
+     * dispatches an event which signals the extension to pull clipboard
+     * data if possible. That data will be made available via an
+     * '_allow-clipboard-data' event if clipboard access is allowed.
+     *
+     * @type {Number}
+     */
+    var clipboardPoll = window.setInterval(function pollClipboardData() {
+        document.dispatchEvent(new CustomEvent('_allow-clipboard-get-data'));
+    }, 50);
 
     /**
      * Map of handlers for document.execCommand() functions, where the key of
@@ -112,6 +139,12 @@
         return _execCommand.apply(this, arguments);
 
     };
+
+    // When clipboard contents are received, update our internal clipboard
+    // content tracking property
+    document.addEventListener('_allow-clipboard-data', function handleData(e) {
+        clipboardContents = e.detail;
+    });
 
 })();
 

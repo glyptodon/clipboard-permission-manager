@@ -27,7 +27,8 @@
             "https://*/*"
         ],
         "js" : [
-            "init.js"
+            "init.js",
+            "clipboardBroker.js"
         ],
         "run_at" : "document_start",
         "all_frames" : true

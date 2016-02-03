@@ -20,6 +20,15 @@
  * THE SOFTWARE.
  */
 
+/**
+ * @file Initializes the clipboard permission management extension, injecting
+ * our overridden document.execCommand() implementation (defined within
+ * execCommand.js).
+ *
+ * @author Michael Jumper
+ */
+
+// Inject the overridden document.execCommand() wherever possible.
 (function injectExecCommand(injectRoot) {
 
     // Inject script tag providing overridden execCommand() where possible
