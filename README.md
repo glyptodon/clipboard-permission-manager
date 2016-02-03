@@ -1,3 +1,9 @@
+**WARNING:** This extension is currently in the early development stages and
+does not yet have a functional permission management system. In its current
+state, *the extension will allow clipboard access universally and without
+prompting*. It is not recommended that this extension be used until it is
+actually completed and released.
+
 Clipboard Permission Manager
 ============================
 
