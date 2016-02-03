@@ -28,27 +28,27 @@
  * control surrounding the local clipboard.
  *
  * If the user has granted access, clipboard data is requested by firing a
- * '_allow-clipboard-get-data' event at the document level, which will result
- * in a '_allow-clipboard-data' event containing the clipboard data if access
+ * '_clip-perm-man-get-data' event at the document level, which will result
+ * in a '_clip-perm-man-data' event containing the clipboard data if access
  * to clipboard data is allowed, while The clipboard contents can be set by
- * sending the contents within a '_allow-clipboard-set-data' event. If access
+ * sending the contents within a '_clip-perm-man-set-data' event. If access
  * has not been granted, neither of these events will have any effect.
  *
  * @author Michael Jumper
  */
 
 // Forward request for clipboard data if clipboard access is granted
-document.addEventListener('_allow-clipboard-get-data', function getData(e) {
+document.addEventListener('_clip-perm-man-get-data', function getData(e) {
 
     // STUB: Send fake clipboard contents via an event
-    document.dispatchEvent(new CustomEvent('_allow-clipboard-data', {
+    document.dispatchEvent(new CustomEvent('_clip-perm-man-data', {
         'detail' : new Date().toString()
     }));
 
 });
 
 // Forward request to set clipboard data if clipboard access is granted
-document.addEventListener('_allow-clipboard-set-data', function setData(e) {
+document.addEventListener('_clip-perm-man-set-data', function setData(e) {
     // STUB
     console.log('SET', e.detail);
 });

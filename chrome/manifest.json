@@ -2,14 +2,13 @@
 
     "manifest_version" : 2,
 
-    "name"        : "Allow Clipboard",
+    "name"        : "Clipboard Permission Manager",
     "version"     : "0.1",
-    "description" : "Allows clipboard access via standard document.execCommand().",
+    "description" : "Allows users to grant direct clipboard access to web pages that use the standard document.execCommand().",
 
     "permissions" : [
         "http://*/*",
         "https://*/*",
-        "tabs",
         "clipboardRead",
         "clipboardWrite"
     ],
@@ -30,7 +29,7 @@
             "init.js",
             "clipboardBroker.js"
         ],
-        "run_at" : "document_start",
+        "run_at"     : "document_start",
         "all_frames" : true
     }],
 

@@ -58,7 +58,7 @@
      *     The value to assign to the local clipboard.
      */
     var setLocalClipboard = function setLocalClipboard(value) {
-        document.dispatchEvent(new CustomEvent('_allow-clipboard-set-data', {
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-set-data', {
             'detail' : value
         }));
     };
@@ -68,12 +68,12 @@
      * window.setInterval(). The clipboard polling interval periodically
      * dispatches an event which signals the extension to pull clipboard
      * data if possible. That data will be made available via an
-     * '_allow-clipboard-data' event if clipboard access is allowed.
+     * '_clip-perm-man-data' event if clipboard access is allowed.
      *
      * @type {Number}
      */
     var clipboardPoll = window.setInterval(function pollClipboardData() {
-        document.dispatchEvent(new CustomEvent('_allow-clipboard-get-data'));
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
     }, 50);
 
     /**
@@ -142,7 +142,7 @@
 
     // When clipboard contents are received, update our internal clipboard
     // content tracking property
-    document.addEventListener('_allow-clipboard-data', function handleData(e) {
+    document.addEventListener('_clip-perm-man-data', function handleData(e) {
         clipboardContents = e.detail;
     });
 
