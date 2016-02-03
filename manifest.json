@@ -1,0 +1,40 @@
+{
+
+    "manifest_version" : 2,
+
+    "name"        : "Allow Clipboard",
+    "version"     : "0.1",
+    "description" : "Allows clipboard access via standard document.execCommand().",
+
+    "permissions" : [
+        "http://*/*",
+        "https://*/*",
+        "tabs",
+        "clipboardRead",
+        "clipboardWrite"
+    ],
+
+    "background" : {
+        "persistent" : false,
+        "scripts" : [
+            "monitorClipboard.js"
+        ]
+    },
+
+    "content_scripts" : [{
+        "matches" : [
+            "http://*/*",
+            "https://*/*"
+        ],
+        "js" : [
+            "init.js"
+        ],
+        "run_at" : "document_start",
+        "all_frames" : true
+    }],
+
+    "web_accessible_resources" : [
+        "execCommand.js"
+    ]
+
+}
