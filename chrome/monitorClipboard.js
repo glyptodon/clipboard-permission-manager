@@ -34,24 +34,52 @@
  * @author Michael Jumper
  */
 
-// Wait for and handle any clipboard request messages from the content page
-chrome.runtime.onMessage.addListener(function handleMessage(message, sender,
-            sendResponse) {
+(function() {
 
-    // Handle message appropriately depending on message type
-    switch (message.type) {
+    /**
+     * A textarea which will function as the intermediary between JavaScript
+     * and the local clipboard contents.
+     *
+     * @type {Element}
+     */
+    var clipboardContents = document.createElement('textarea');
+    document.body.appendChild(clipboardContents);
 
-        // STUB: Pull clipboard data if requested
-        case 'get-data':
-            sendResponse('TEST: ' + new Date().toString());
-            break;
+    // Wait for and handle any clipboard request messages from the content page
+    chrome.runtime.onMessage.addListener(function handleMessage(message,
+                sender, sendResponse) {
 
-        // STUB: Set clipboard data if requested
-        case 'set-data':
-            console.log('SET', message.data);
-            break;
+        // Handle message appropriately depending on message type
+        switch (message.type) {
 
-    }
+            // Pull clipboard data if requested
+            case 'get-data':
 
-});
+                // Prepare textarea to receive paste
+                clipboardContents.value = '';
+                clipboardContents.select();
+
+                // Attempt paste of current clipboard, forwarding the
+                // resulting data if successful
+                if (document.execCommand('paste'))
+                    sendResponse(clipboardContents.value);
+
+                break;
+
+            // Set clipboard data if requested
+            case 'set-data':
+
+                // Assign and select desired value within textarea
+                clipboardContents.value = message.data;
+                clipboardContents.select();
+
+                // Attempt copy, failing silently if unsuccessful
+                document.execCommand('copy');
+                break;
+
+        }
+
+    }); // end message handler
+
+})();
 
