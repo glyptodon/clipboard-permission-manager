@@ -16,7 +16,7 @@
     "background" : {
         "persistent" : false,
         "scripts" : [
-            "js/monitorClipboard.js"
+            "js/clipboardService.js"
         ]
     },
 
