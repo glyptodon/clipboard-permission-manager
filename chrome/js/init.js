@@ -34,7 +34,7 @@
     // Inject script tag providing overridden execCommand() where possible
     if (injectRoot) {
         var script = document.createElement('script');
-        script.src = chrome.extension.getURL('execCommand.js');
+        script.src = chrome.extension.getURL('js/execCommand.js');
         injectRoot.appendChild(script);
     }
 

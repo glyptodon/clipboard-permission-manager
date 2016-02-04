@@ -16,7 +16,7 @@
     "background" : {
         "persistent" : false,
         "scripts" : [
-            "monitorClipboard.js"
+            "js/monitorClipboard.js"
         ]
     },
 
@@ -26,15 +26,15 @@
             "https://*/*"
         ],
         "js" : [
-            "init.js",
-            "clipboardBroker.js"
+            "js/init.js",
+            "js/clipboardBroker.js"
         ],
         "run_at"     : "document_start",
         "all_frames" : true
     }],
 
     "web_accessible_resources" : [
-        "execCommand.js"
+        "js/execCommand.js"
     ]
 
 }
