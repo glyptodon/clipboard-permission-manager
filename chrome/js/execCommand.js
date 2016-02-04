@@ -64,17 +64,18 @@
     };
 
     /**
-     * The ID of the periodic clipboard polling interval, as returned by
-     * window.setInterval(). The clipboard polling interval periodically
-     * dispatches an event which signals the extension to pull clipboard
-     * data if possible. That data will be made available via an
-     * '_clip-perm-man-data' event if clipboard access is allowed.
-     *
-     * @type {Number}
+     * Requests that data from the local clipboard be pulled. This pull is
+     * asynchronous; data will be returned via a "_clip-perm-man-data" event
+     * if reading from the clipboard is successful.
      */
-    var clipboardPoll = window.setInterval(function pollClipboardData() {
-        document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
-    }, 50);
+    var requestLocalClipboard = function requestLocalClipboard() {
+
+        // Defer request for clipboard data
+        window.setTimeout(function requestClipboardData() {
+            document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
+        }, 50);
+
+    };
 
     /**
      * Map of handlers for document.execCommand() functions, where the key of
@@ -139,6 +140,11 @@
         return _execCommand.apply(this, arguments);
 
     };
+
+    // Request an update of the local clipboard when it may have changed
+    window.addEventListener('focus', requestLocalClipboard, true);
+    window.addEventListener('copy',  requestLocalClipboard, true);
+    window.addEventListener('cut',   requestLocalClipboard, true);
 
     // When clipboard contents are received, update our internal clipboard
     // content tracking property
