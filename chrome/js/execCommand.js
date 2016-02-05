@@ -35,6 +35,17 @@
 (function overrideExecCommand() {
 
     /**
+     * Whether the behavior of document.execCommand() should be overridden.
+     * Though this will dictate whether requests for clipboard data are sent,
+     * the clipboard broker is still the intermediary enforcinging access
+     * restrictions, and will always enforce those restructions regardless of
+     * the state of this flag.
+     *
+     * @type {Boolean}
+     */
+    var overrideEnabled = true; // STUB
+
+    /**
      * The current contents of the local clipboard. This will be continuously
      * updated by the clipboard monitor script. If the clipboard cannot be read
      * this will be null.
@@ -69,12 +80,7 @@
      * if reading from the clipboard is successful.
      */
     var requestLocalClipboard = function requestLocalClipboard() {
-
-        // Defer request for clipboard data
-        window.setTimeout(function requestClipboardData() {
-            document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
-        }, 50);
-
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
     };
 
     /**
@@ -123,13 +129,12 @@
      */
     document.execCommand = function clipExecCommand(name) {
 
-        // Override behavior only if the command has a defined handler
-        var commandHandler = commandHandlers[name];
-        if (commandHandler) {
+        // Override default document.execCommand() behavior if enabled
+        if (overrideEnabled) {
 
-            // If clipboard has ever successfully been read, override default
-            // behavior of document.execCommand()
-            if (clipboardContents !== null) {
+            // Override behavior only if the command has a defined handler
+            var commandHandler = commandHandlers[name];
+            if (commandHandler) {
                 commandHandler.apply(this);
                 return true;
             }
