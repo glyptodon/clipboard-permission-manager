@@ -16,8 +16,13 @@
     "background" : {
         "persistent" : false,
         "scripts" : [
-            "js/clipboardService.js"
+            "js/clipboardService.js",
+            "js/permissionService.js"
         ]
+    },
+
+    "page_action" : {
+        "default_popup" : "popup/popup.html"
     },
 
     "content_scripts" : [{
