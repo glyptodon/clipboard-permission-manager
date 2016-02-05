@@ -129,8 +129,9 @@
      */
     document.execCommand = function clipExecCommand(name) {
 
-        // Override default document.execCommand() behavior if enabled
-        if (overrideEnabled) {
+        // Override default document.execCommand() behavior if enabled and we
+        // have successfully read from the clipboard at least once
+        if (overrideEnabled && clipboardContents !== null) {
 
             // Override behavior only if the command has a defined handler
             var commandHandler = commandHandlers[name];
