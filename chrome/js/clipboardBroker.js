@@ -40,6 +40,68 @@
 (function() {
 
     /**
+     * The origin (protocol, domain, etc. portion of the URL) of the current
+     * tab.
+     *
+     * @type {String}
+     */
+    var origin = window.location.origin;
+
+    /**
+     * Whether clipboard access is allowed within the current tab.
+     *
+     * @type {Boolean}
+     */
+    var allowed = false;
+
+    /**
+     * Signals the popup service that the clipboard permission popup for the
+     * current tab should be shown.
+     */
+    var showPopup = function showPopup() {
+        chrome.runtime.sendMessage({ 'type' : 'display-popup' });
+    };
+
+    /**
+     * Returns an object representing the permissions granted to this tab. This
+     * object will consist of two properties: "origin", which will be the
+     * origin (protocol, domain, etc. portion of the URL) of the tab for which
+     * the permission is granted, and "allowed", a boolean which will be true
+     * iff direct clipboard acccess is granted to the origin in question.
+     *
+     * @return {Object}
+     *     An object representing the permissions granted to this tab.
+     */
+    var getPermissions = function getPermissions() {
+        return {
+            'origin'  : origin,
+            'allowed' : allowed
+        };
+    };
+
+    /**
+     * Assigns the permissions granted to this tab. This object MUST consist of
+     * two properties: "origin", which will be the origin (protocol, domain,
+     * etc. portion of the URL) of the tab for which the permission is granted,
+     * and "allowed", a boolean which will be true iff direct clipboard acccess
+     * is granted to the origin in question. If the permission object does not
+     * match the origin of the current tab, this function will have no effect.
+     *
+     * @param {Object} data
+     *     An object representing the permissions granted to this tab.
+     */
+    var setPermissions = function setPermissions(data) {
+
+        // Only honor requests which affect this page
+        if (data.origin !== origin)
+            return;
+
+        // Update permission
+        allowed = data.allowed;
+
+    };
+
+    /**
      * Notifies the overridden document.execCommand() implementation that the
      * local clipboard contents have been successfully read as requested.
      *
@@ -54,18 +116,55 @@
 
     // Forward request for clipboard data if clipboard access is granted
     document.addEventListener('_clip-perm-man-get-data', function getData(e) {
-        chrome.runtime.sendMessage({
-            'type' : 'get-data'
-        }, notifyClipboardRead);
+
+        // Ensure the permission control popup is displayed
+        showPopup();
+
+        // Only forward request if allowed
+        if (allowed) {
+            chrome.runtime.sendMessage({
+                'type' : 'get-data'
+            }, notifyClipboardRead);
+        }
+
     });
 
     // Forward request to set clipboard data if clipboard access is granted
     document.addEventListener('_clip-perm-man-set-data', function setData(e) {
-        chrome.runtime.sendMessage({
-            'type' : 'set-data',
-            'data' : e.detail
-        });
+
+        // Ensure the permission control popup is displayed
+        showPopup();
+
+        // Only forward request if allowed
+        if (allowed) {
+            chrome.runtime.sendMessage({
+                'type' : 'set-data',
+                'data' : e.detail
+            });
+        }
+
     });
+
+    // Wait for requests to check or alter permissions
+    chrome.runtime.onMessage.addListener(function handleMessage(message,
+                sender, sendResponse) {
+
+        // Handle message appropriately depending on message type
+        switch (message.type) {
+
+            // Send the permissions currently granted to this page
+            case 'get-permissions':
+                sendResponse(getPermissions());
+                break;
+
+            // Assign permissions when requested
+            case 'set-permissions':
+                setPermissions(message.data);
+                break;
+
+        };
+
+    }); // end message handler
 
 })();
 

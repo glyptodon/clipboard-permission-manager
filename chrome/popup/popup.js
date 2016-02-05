@@ -28,6 +28,23 @@
  */
 
 /**
+ * The currently-active tab in which this popup is displayed. If the active
+ * tab is not yet known, this will be null.
+ *
+ * @type {Tab}
+ */
+var activeTab = null;
+
+/**
+ * The origin (protocol, domain, etc. portion of the URL) of the tab in which
+ * this popup is displayed. If the active tab is not yet known, this will be
+ * null.
+ *
+ * @type {String}
+ */
+var activeTabOrigin = null;
+
+/**
  * Map of all interface elements by their defined ID.
  *
  * @type {Object.<String, Element>}
@@ -107,7 +124,21 @@ var setDisplayedSite = function setDisplayedSite(name) {
 
 // Update displayed state whenever the selection changes
 elements.allowed.onchange = elements.denied.onchange = function updateState() {
+
+    // Update display state to reflect change
     setDisplayedState(elements.allowed.checked);
+
+    // Propogate change back to the broker (if active tab known)
+    if (activeTab && activeTabOrigin) {
+        chrome.tabs.sendMessage(activeTab.id, {
+            'type' : 'set-permissions',
+            'data' : {
+                'origin'  : activeTabOrigin,
+                'allowed' : elements.allowed.checked
+            }
+        });
+    }
+
 };
 
 // Pull permission information from active tab when known
@@ -118,10 +149,17 @@ chrome.tabs.query({
 
     // Init display state with permissions granted to active tab
     chrome.tabs.sendMessage(tabs[0].id, {
-        'type' : 'check-permission'
-    }, function permissionReceived(perm) {
-        setDisplayedSite(perm.origin);
-        setDisplayedState(perm.allowed);
+        'type' : 'get-permissions'
+    }, function permissionReceived(perms) {
+
+        // Store state of current tab
+        activeTab = tabs[0];
+        activeTabOrigin = perms.origin;
+
+        // Update interface
+        setDisplayedSite(perms.origin);
+        setDisplayedState(perms.allowed);
+
     });
 
 });
