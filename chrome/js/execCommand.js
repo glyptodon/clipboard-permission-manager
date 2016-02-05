@@ -142,6 +142,7 @@
     };
 
     // Request an update of the local clipboard when it may have changed
+    window.addEventListener('load',  requestLocalClipboard, true);
     window.addEventListener('focus', requestLocalClipboard, true);
     window.addEventListener('copy',  requestLocalClipboard, true);
     window.addEventListener('cut',   requestLocalClipboard, true);
