@@ -16,13 +16,13 @@
     "background" : {
         "persistent" : false,
         "scripts" : [
-            "js/clipboardService.js",
-            "js/popupService.js"
+            "private/background/clipboardService.js",
+            "private/background/popupService.js"
         ]
     },
 
     "page_action" : {
-        "default_popup" : "popup/popup.html"
+        "default_popup" : "private/popup/popup.html"
     },
 
     "content_scripts" : [{
@@ -31,15 +31,15 @@
             "https://*/*"
         ],
         "js" : [
-            "js/init.js",
-            "js/clipboardBroker.js"
+            "private/content/init.js",
+            "private/content/clipboardBroker.js"
         ],
         "run_at"     : "document_start",
         "all_frames" : true
     }],
 
     "web_accessible_resources" : [
-        "js/execCommand.js"
+        "public/execCommand.js"
     ]
 
 }
