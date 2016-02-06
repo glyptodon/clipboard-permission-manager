@@ -10,7 +10,8 @@
         "http://*/*",
         "https://*/*",
         "clipboardRead",
-        "clipboardWrite"
+        "clipboardWrite",
+        "storage"
     ],
 
     "background" : {

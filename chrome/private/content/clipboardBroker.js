@@ -48,13 +48,6 @@
     var origin = window.location.origin;
 
     /**
-     * Whether clipboard access is allowed within the current tab.
-     *
-     * @type {Boolean}
-     */
-    var allowed = false;
-
-    /**
      * Signals the popup service that the clipboard permission popup for the
      * current tab should be shown.
      */
@@ -63,29 +56,54 @@
     };
 
     /**
-     * Returns an object representing the permissions granted to this tab. This
-     * object will consist of two properties: "origin", which will be the
+     * Retrieves an object representing the permissions granted to this tab.
+     * This object will consist of two properties: "origin", which will be the
      * origin (protocol, domain, etc. portion of the URL) of the tab for which
      * the permission is granted, and "allowed", a boolean which will be true
-     * iff direct clipboard acccess is granted to the origin in question.
+     * if and only if direct clipboard access is granted to the origin in
+     * question.
      *
-     * @return {Object}
-     *     An object representing the permissions granted to this tab.
+     * This function operates asynchronously, and will return the data via the
+     * sole parameter of the provided callback.
+     *
+     * @param {Function}
+     *     The callback to invoke with the returned data once retrieved.
      */
-    var getPermissions = function getPermissions() {
-        return {
-            'origin'  : origin,
-            'allowed' : allowed
-        };
+    var getPermissions = function getPermissions(callback) {
+        chrome.storage.sync.get(origin, function valuesRetrieved(values) {
+            callback({
+                'origin'  : origin,
+                'allowed' : (values && values[origin]) || false
+            });
+        });
+    };
+
+    /**
+     * Invokes the given callback if and only if clipboard access has been
+     * granted.
+     *
+     * @param {Function} callback
+     *     The callback to invoke if and only if clipboard access has been
+     *     granted.
+     */
+    var ifAllowed = function ifAllowed(callback) {
+        getPermissions(function checkIfAllowed(perms) {
+
+            // Invoke callback only if allowed
+            if (perms.origin === origin && perms.allowed)
+                callback();
+
+        });
     };
 
     /**
      * Assigns the permissions granted to this tab. This object MUST consist of
      * two properties: "origin", which will be the origin (protocol, domain,
      * etc. portion of the URL) of the tab for which the permission is granted,
-     * and "allowed", a boolean which will be true iff direct clipboard acccess
-     * is granted to the origin in question. If the permission object does not
-     * match the origin of the current tab, this function will have no effect.
+     * and "allowed", a boolean which will be true if and only if direct
+     * clipboard access is granted to the origin in question. If the permission
+     * object does not match the origin of the current tab, this function will
+     * have no effect.
      *
      * @param {Object} data
      *     An object representing the permissions granted to this tab.
@@ -96,8 +114,16 @@
         if (data.origin !== origin)
             return;
 
-        // Update permission
-        allowed = data.allowed;
+        // If not allowed, simply remove any existing setting
+        if (!data.allowed)
+            chrome.storage.sync.remove(origin);
+
+        // Store setting otherwise
+        else {
+            var storageData = {};
+            storageData[origin] = data.allowed;
+            chrome.storage.sync.set(storageData);
+        }
 
     };
 
@@ -121,11 +147,11 @@
         showPopup();
 
         // Only forward request if allowed
-        if (allowed) {
+        ifAllowed(function forwardGetRequest() {
             chrome.runtime.sendMessage({
                 'type' : 'get-data'
             }, notifyClipboardRead);
-        }
+        });
 
     });
 
@@ -136,12 +162,12 @@
         showPopup();
 
         // Only forward request if allowed
-        if (allowed) {
+        ifAllowed(function forwardSetRequest() {
             chrome.runtime.sendMessage({
                 'type' : 'set-data',
                 'data' : e.detail
             });
-        }
+        });
 
     });
 
@@ -154,8 +180,8 @@
 
             // Send the permissions currently granted to this page
             case 'get-permissions':
-                sendResponse(getPermissions());
-                break;
+                getPermissions(sendResponse);
+                return true;
 
             // Assign permissions when requested
             case 'set-permissions':
