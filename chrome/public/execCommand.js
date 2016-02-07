@@ -35,17 +35,6 @@
 (function overrideExecCommand() {
 
     /**
-     * Whether the behavior of document.execCommand() should be overridden.
-     * Though this will dictate whether requests for clipboard data are sent,
-     * the clipboard broker is still the intermediary enforcinging access
-     * restrictions, and will always enforce those restructions regardless of
-     * the state of this flag.
-     *
-     * @type {Boolean}
-     */
-    var overrideEnabled = true; // STUB
-
-    /**
      * The current contents of the local clipboard. This will be continuously
      * updated by the clipboard monitor script. If the clipboard cannot be read
      * this will be null.
@@ -81,6 +70,14 @@
      */
     var requestLocalClipboard = function requestLocalClipboard() {
         document.dispatchEvent(new CustomEvent('_clip-perm-man-get-data'));
+    };
+
+    /**
+     * Requests that the extension prompt the user to confirm whether they wish
+     * to allow or deny direct clipboard access.
+     */
+    var confirmClipboardAccess = function confirmClipboardAccess() {
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-confirm'));
     };
 
     /**
@@ -129,13 +126,18 @@
      */
     document.execCommand = function clipExecCommand(name) {
 
-        // Override default document.execCommand() behavior if enabled and we
-        // have successfully read from the clipboard at least once
-        if (overrideEnabled && clipboardContents !== null) {
+        // Override behavior only if the command has a defined handler
+        var commandHandler = commandHandlers[name];
+        if (commandHandler) {
 
-            // Override behavior only if the command has a defined handler
-            var commandHandler = commandHandlers[name];
-            if (commandHandler) {
+            // As this page is attempting to access the clipboard, regardless
+            // of whether that access is allowed, prompt the user regarding
+            // whether such access should be granted or denied going forward
+            confirmClipboardAccess();
+
+            // Override default document.execCommand() behavior if enabled and
+            // we have successfully read from the clipboard at least once
+            if (clipboardContents !== null) {
                 commandHandler.apply(this);
                 return true;
             }

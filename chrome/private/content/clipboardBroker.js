@@ -52,7 +52,6 @@
      * current tab should be shown.
      */
     var showPopup = function showPopup() {
-        chrome.runtime.sendMessage({ 'type' : 'display-popup' });
     };
 
     /**
@@ -140,11 +139,13 @@
         }));
     };
 
+    // Show the popup if a request for access confirmation is received
+    document.addEventListener('_clip-perm-man-confirm', function showPopup() {
+        chrome.runtime.sendMessage({ 'type' : 'display-popup' });
+    });
+
     // Forward request for clipboard data if clipboard access is granted
     document.addEventListener('_clip-perm-man-get-data', function getData(e) {
-
-        // Ensure the permission control popup is displayed
-        showPopup();
 
         // Only forward request if allowed
         ifAllowed(function forwardGetRequest() {
@@ -157,9 +158,6 @@
 
     // Forward request to set clipboard data if clipboard access is granted
     document.addEventListener('_clip-perm-man-set-data', function setData(e) {
-
-        // Ensure the permission control popup is displayed
-        showPopup();
 
         // Only forward request if allowed
         ifAllowed(function forwardSetRequest() {
