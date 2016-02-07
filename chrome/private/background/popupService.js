@@ -28,6 +28,42 @@
 
 (function() {
 
+    /**
+     * Sets the icon of the popup for the given tab depending on whether
+     * clipboard access is currently allowed.
+     *
+     * @param {Tab} tab
+     *     The tab associated with the popup.
+     *
+     * @param {Boolean} allowed
+     *     Whether clipboard access is currently allowed on the given tab.
+     */
+    var setIcon = function setIcon(tab, allowed) {
+
+        var iconPaths;
+
+        // If clipboard access is granted, select the "allowed" icon
+        if (allowed)
+            iconPaths = {
+                '19' : 'private/popup/icons/clipboard-allow-19.png',
+                '38' : 'private/popup/icons/clipboard-allow-38.png'
+            };
+
+        // Otherwise, select the "denied" icon
+        else
+            iconPaths = {
+                '19' : 'private/popup/icons/clipboard-deny-19.png',
+                '38' : 'private/popup/icons/clipboard-deny-38.png'
+            };
+
+        // Update the popup to use the selected icon
+        chrome.pageAction.setIcon({
+            'tabId' : tab.id,
+            'path'  : iconPaths
+        });
+
+    };
+
     // Wait for requests to display the popup
     chrome.runtime.onMessage.addListener(function handleMessage(message,
                 sender, sendResponse) {
@@ -38,6 +74,7 @@
             // Display the clipboard popup when requested
             case 'display-popup':
                 chrome.pageAction.show(sender.tab.id);
+                setIcon(sender.tab, message.data.allowed);
                 break;
 
         }

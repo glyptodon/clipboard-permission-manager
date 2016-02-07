@@ -49,9 +49,21 @@
 
     /**
      * Signals the popup service that the clipboard permission popup for the
-     * current tab should be shown.
+     * current tab should be shown using an icon appropriate for the given
+     * permissions. This permissions object MUST consist of two properties:
+     * "origin", which will be the origin (protocol, domain, etc. portion of
+     * the URL) of the tab for which the permission is granted, and "allowed",
+     * a boolean which will be true if and only if direct clipboard access is
+     * granted to the origin in question.
+     *
+     * @param {Object} perms
+     *     An object representing the permissions granted to this tab.
      */
-    var showPopup = function showPopup() {
+    var showPopup = function showPopup(perms) {
+        chrome.runtime.sendMessage({
+            'type' : 'display-popup',
+            'data' : perms
+        });
     };
 
     /**
@@ -124,6 +136,9 @@
             chrome.storage.sync.set(storageData);
         }
 
+        // Signal popup to update according to new permissions
+        showPopup(data);
+
     };
 
     /**
@@ -140,8 +155,11 @@
     };
 
     // Show the popup if a request for access confirmation is received
-    document.addEventListener('_clip-perm-man-confirm', function showPopup() {
-        chrome.runtime.sendMessage({ 'type' : 'display-popup' });
+    document.addEventListener('_clip-perm-man-confirm',
+            function confirmAccess() {
+        getPermissions(function checkIfAllowed(perms) {
+            showPopup(perms);
+        });
     });
 
     // Forward request for clipboard data if clipboard access is granted

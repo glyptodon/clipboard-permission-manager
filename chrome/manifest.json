@@ -31,7 +31,11 @@
     },
 
     "page_action" : {
-        "default_popup" : "private/popup/popup.html"
+        "default_popup" : "private/popup/popup.html",
+        "default_icon" : {
+            "19" : "private/popup/icons/clipboard-maybe-19.png",
+            "38" : "private/popup/icons/clipboard-maybe-38.png"
+        }
     },
 
     "content_scripts" : [{
