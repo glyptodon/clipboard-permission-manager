@@ -208,5 +208,21 @@
 
     }); // end message handler
 
+    // Monitor storage for changes, updating the popup depending on permissions
+    chrome.storage.onChanged.addListener(function storageUpdated(changes) {
+
+        // Pull relevant changes, if any
+        var relevantChanges = changes[origin];
+        if (!relevantChanges)
+            return;
+
+        // Update popup appropriately
+        showPopup({
+            'origin'  : origin,
+            'allowed' : relevantChanges.newValue || false
+        });
+
+    });
+
 })();
 
