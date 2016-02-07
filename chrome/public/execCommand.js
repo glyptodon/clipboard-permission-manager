@@ -130,22 +130,27 @@
         var commandHandler = commandHandlers[name];
         if (commandHandler) {
 
-            // As this page is attempting to access the clipboard, regardless
-            // of whether that access is allowed, prompt the user regarding
-            // whether such access should be granted or denied going forward
-            confirmClipboardAccess();
-
             // Override default document.execCommand() behavior if enabled and
             // we have successfully read from the clipboard at least once
             if (clipboardContents !== null) {
+
+                // Prompt the user regarding whether access should continue
+                // being granted/denied going forward
+                confirmClipboardAccess();
+
+                // Pass request for data through to clipboard broker
                 commandHandler.apply(this);
                 return true;
+
             }
 
         }
 
-        // Otherwise pass through to original execCommand() implementation
-        return _execCommand.apply(this, arguments);
+        // Otherwise pass through to original execCommand() implementation,
+        // requesting confirmation if the operation failed
+        var successful = _execCommand.apply(this, arguments);
+        if (!successful)
+            confirmClipboardAccess();
 
     };
 
@@ -159,6 +164,11 @@
     // content tracking property
     document.addEventListener('_clip-perm-man-data', function handleData(e) {
         clipboardContents = e.detail;
+    });
+
+    // If clipboard access is denied, revert to default implementation
+    document.addEventListener('_clip-perm-man-denied', function handleData(e) {
+        clipboardContents = null;
     });
 
 })();

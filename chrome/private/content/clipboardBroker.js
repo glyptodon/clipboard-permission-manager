@@ -91,18 +91,27 @@
 
     /**
      * Invokes the given callback if and only if clipboard access has been
-     * granted.
+     * granted. An optional callback can be provided which will be invoked if
+     * and only if access has been denied.
      *
-     * @param {Function} callback
+     * @param {Function} allowedCallback
      *     The callback to invoke if and only if clipboard access has been
      *     granted.
+     *
+     * @param {Function} [deniedCallback]
+     *     The callback to invoke if and only if clipboard access has been
+     *     denied.
      */
-    var ifAllowed = function ifAllowed(callback) {
+    var ifAllowed = function ifAllowed(allowedCallback, deniedCallback) {
         getPermissions(function checkIfAllowed(perms) {
 
             // Invoke callback only if allowed
             if (perms.origin === origin && perms.allowed)
-                callback();
+                allowedCallback();
+
+            // Otherwise invoke denial callback (if provided)
+            else if (deniedCallback)
+                deniedCallback();
 
         });
     };
@@ -154,6 +163,14 @@
         }));
     };
 
+    /**
+     * Notifies the overridden document.execCommand() implementation that
+     * access to local clipboard contents is not granted.
+     */
+    var notifyClipboardDenied = function notifyClipboardDenied() {
+        document.dispatchEvent(new CustomEvent('_clip-perm-man-denied'));
+    };
+
     // Show the popup if a request for access confirmation is received
     document.addEventListener('_clip-perm-man-confirm',
             function confirmAccess() {
@@ -170,7 +187,7 @@
             chrome.runtime.sendMessage({
                 'type' : 'get-data'
             }, notifyClipboardRead);
-        });
+        }, notifyClipboardDenied);
 
     });
 
@@ -183,7 +200,7 @@
                 'type' : 'set-data',
                 'data' : e.detail
             });
-        });
+        }, notifyClipboardDenied);
 
     });
 
