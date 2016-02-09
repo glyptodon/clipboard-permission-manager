@@ -3,7 +3,7 @@
     "manifest_version" : 2,
 
     "name"        : "Clipboard Permission Manager",
-    "version"     : "0.2",
+    "version"     : "0.3",
     "description" : "Allows users to grant direct clipboard access to web pages that use the W3C Clipboard API.",
 
     "icons" : {
