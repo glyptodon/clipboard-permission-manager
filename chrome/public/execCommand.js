@@ -149,8 +149,11 @@
         // Otherwise pass through to original execCommand() implementation,
         // requesting confirmation if the operation failed
         var successful = _execCommand.apply(this, arguments);
-        if (!successful)
+        if (!successful && commandHandler)
             confirmClipboardAccess();
+
+        // Return whether execCommand() was successful
+        return successful;
 
     };
 
