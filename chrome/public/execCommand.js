@@ -81,6 +81,23 @@
     };
 
     /**
+     * Escapes the given value such that it is interpreted as plain text when
+     * included within HTML.
+     *
+     * @param {String} text
+     *     The value to escape for inclusion within HTML.
+     *
+     * @returns {String}
+     *     The provided value, escaped such that it is interpreted as plain
+     *     text when included within HTML.
+     */
+    var escapeHTML = function escapeHTML(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    /**
      * Map of handlers for document.execCommand() functions, where the key of
      * each entry is the name of the command being overridden.
      *
@@ -93,7 +110,7 @@
          */
         'cut' : function handleCut() {
             setLocalClipboard(window.getSelection().toString());
-            _execCommand.call(this, 'insertText', false, '');
+            _execCommand.call(this, 'insertHTML', false, '');
         },
 
         /**
@@ -107,7 +124,8 @@
          * Handler for document.execCommand('paste').
          */
         'paste' : function handlePaste() {
-            _execCommand.call(this, 'insertText', false, clipboardContents);
+            _execCommand.call(this, 'insertHTML', false,
+                escapeHTML(clipboardContents));
         }
 
     };
